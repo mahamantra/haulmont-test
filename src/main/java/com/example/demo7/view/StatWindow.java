@@ -6,10 +6,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Window;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class StatWindow extends Window {
     MainUI mainUI;
@@ -29,10 +26,12 @@ public class StatWindow extends Window {
 
         doctorList.forEach(doctor -> {
             Stat stat = new Stat();
-            stat.setDoctor(doctor);
             stat.setCount(mainUI.getRecieptMyService().getStat(doctor.getId()).size());
-            statList.add(stat);
+if (stat.count>0)
+            {stat.setDoctor(doctor);
+            statList.add(stat);}
         });
+        Collections.sort(statList);
         grid.setItems(statList);
 
         setContent(grid);
@@ -40,9 +39,13 @@ public class StatWindow extends Window {
     }
 
     @Data
-  public   static class Stat {
+  public   static class Stat implements Comparable<Stat>{
         Doctor doctor;
         Integer count;
 
+        @Override
+        public int compareTo(Stat o) {
+            return o.count.compareTo(this.count);
+        }
     }
 }

@@ -15,12 +15,8 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.w3c.dom.ls.LSOutput;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Data
@@ -41,7 +37,7 @@ public class MainUI extends UI {
     Grid<Doctor> doctorGrid = new Grid<>(Doctor.class);
     Grid<Patient> patientGrid = new Grid<>(Patient.class);
     Grid<Reciept> recieptGrid = new Grid<>(Reciept.class);
-    EditDoctorWindow editDoctorWindow = new EditDoctorWindow();
+    EditDoctorWindow editDoctorWindow;
     EditPatientWindow editPatientWindow = new EditPatientWindow();
 
     VerticalLayout doctorLayout;
@@ -50,28 +46,13 @@ public class MainUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
+        System.out.println("1" + doctorMyService);
         doctorGridInit();
         patientGridInit();
         recieptGridInit();
         doctorLayout.setVisible(true);
         patientLayout.setVisible(false);
         recieptLayout.setVisible(false);
-
-//        ListSelect<String> sample = new ListSelect<>("Select an option");
-//
-//        sample.setItems("Doctors", "Patients", "Recipes");
-//        // sample.setRows(6);
-//        //sample.select(data.get(0));
-//        sample.setWidth("200px");
-
-
-//        sample.addValueChangeListener(event -> {
-//            Notification.show("Value changed:", String.valueOf(event.getValue()),
-//                    Notification.Type.TRAY_NOTIFICATION);
-//            if (String.valueOf(event.getValue()).equals("[Doctors]")) doctorLayout.setVisible(true);
-//            else doctorLayout.setVisible(false);
-//        });
-
 
         Label title = new Label("Menu");
         title.addStyleName(ValoTheme.MENU_TITLE);
@@ -110,19 +91,36 @@ public class MainUI extends UI {
         mainLayout.setExpandRatio(recieptLayout, 1);
 
         mainLayout.setSizeFull();
-
+        System.out.println(doctorMyService);
 
         setContent(mainLayout);
 
     }
 
     private void doctorGridInit() {
+        System.out.println("2" + doctorMyService);
+        editDoctorWindow = new EditDoctorWindow(this);
+        editDoctorWindow.setMyService(doctorMyService);
+
         Button addBtn = new Button("Add", event -> {
+
             doctorGrid.asSingleSelect().clear();
             editDoctorWindow.setDoctor(new Doctor());
             addWindow(editDoctorWindow);
         });
-        Button editBtn = new Button("Edit", event -> addWindow(editDoctorWindow));
+
+        Button editBtn = new Button("Edit", event -> {
+            try {
+                Doctor doctor = doctorGrid.asSingleSelect().getValue();
+                if (doctor == null) throw new NullPointerException();
+            } catch (NullPointerException e) {
+                Notification.show("Выбери строку");
+                return;
+            }
+            editDoctorWindow.setDoctor(doctorGrid.asSingleSelect().getValue());
+            addWindow(editDoctorWindow);
+        });
+
         Button deleteBtn = new Button("Delete", event -> {
             doctorMyService.del(doctorGrid.asSingleSelect().getValue());
             updateDoctorList();
@@ -139,12 +137,11 @@ public class MainUI extends UI {
         doctorLayout.setExpandRatio(doctorGrid, 1);
         doctorLayout.setMargin(false);
 
-        doctorGrid.asSingleSelect().addValueChangeListener(event -> {
-            editDoctorWindow.setMyService(doctorMyService);
-            editDoctorWindow.setDoctor(event.getValue());
-            editDoctorWindow.setMyUI(this);
-
-        });
+//        doctorGrid.asSingleSelect().addValueChangeListener(event -> {
+//            editDoctorWindow.setDoctor(event.getValue());
+//           // editDoctorWindow.setMainUI(this);
+//
+//        });
         updateDoctorList();
     }
 
@@ -201,7 +198,7 @@ public class MainUI extends UI {
                 list = list.stream().filter(reciept -> reciept.getPatient().getId().equals(patientFilter.getValue().getId())).collect(Collectors.toList());
             }
             if (descritionFilter.getValue() != null) {
-                list = list.stream().filter(reciept -> reciept.getDescription().contains(descritionFilter.getValue())).collect(Collectors.toList());
+                list = list.stream().filter(reciept -> reciept.getDescription().toLowerCase().contains(descritionFilter.getValue().toLowerCase())).collect(Collectors.toList());
             }
 
 

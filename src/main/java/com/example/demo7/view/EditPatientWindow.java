@@ -16,10 +16,8 @@ public class EditPatientWindow extends Window {
     private TextField patronymic = new TextField("Patronymic");
     private TextField phoneNumber = new TextField("Phone number");
 
-    //    private NativeSelect<CustomerStatus> status = new NativeSelect<>("Status");
     private Button save = new Button("Save");
     private Button cancel = new Button("Cancel");
-    //
 
     private PatientMyService patientMyService;
 
