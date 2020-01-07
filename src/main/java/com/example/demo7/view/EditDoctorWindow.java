@@ -3,6 +3,7 @@ package com.example.demo7.view;
 import com.example.demo7.domain.Doctor;
 import com.example.demo7.service.DoctorMyService;
 import com.vaadin.data.Binder;
+import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.*;
@@ -24,7 +25,7 @@ public class EditDoctorWindow extends Window {
 
     private Doctor doctor;
     private MainUI myUI;
-    private Binder<Doctor> binder = new Binder<>(Doctor.class);
+    private Binder<Doctor> binder = new Binder<>();
 
     public EditDoctorWindow() {
         super("Patient editor");
@@ -34,10 +35,20 @@ public class EditDoctorWindow extends Window {
         save.addClickListener(e -> this.save());
         cancel.addClickListener(e -> this.closeBtn());
 
-        binder.bindInstanceFields(this);
+        // binder.bindInstanceFields(this);
 
-//        binder.forField(lastName)
-//                .withValidator(new StringLengthValidator("Too short",3,256));
+        binder.forField(lastName)
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][а-яёЁ]{1,20}$"))
+                .bind(Doctor::getLastName, Doctor::setLastName);
+        binder.forField(firstName)
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][а-яёЁ]{1,20}$"))
+                .bind(Doctor::getFirstName, Doctor::setFirstName);
+        binder.forField(patronymic)
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][а-яёЁ]{1,20}$"))
+                .bind(Doctor::getPatronymic, Doctor::setPatronymic);
+        binder.forField(specialization)
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][а-яёЁ]{1,30}$"))
+                .bind(Doctor::getSpecialization, Doctor::setSpecialization);
 
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
@@ -67,6 +78,7 @@ public class EditDoctorWindow extends Window {
     }
 
     private void save() {
+
         doctorMyService.saveDoctor(doctor);
         myUI.updateDoctorList();
         close();
