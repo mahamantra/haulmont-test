@@ -14,10 +14,12 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Data
 @Theme("valo")
@@ -215,10 +217,16 @@ public class MainUI extends UI {
             addWindow(new EditRecieptWindow(new Reciept(), this));
         });
         Button editBtn = new Button("Edit", event -> {
-            EditRecieptWindow editRecieptWindow = new EditRecieptWindow(recieptGrid.asSingleSelect().getValue(), this);
-            editRecieptWindow.setMyService(recieptMyService);
-            editRecieptWindow.setMyUI(this);
-            addWindow(editRecieptWindow);
+            EditRecieptWindow editRecieptWindow;
+            try {
+                Reciept reciept = recieptGrid.asSingleSelect().getValue();
+                if (reciept == null) throw new NullPointerException();
+                editRecieptWindow = new EditRecieptWindow(reciept, this);
+                addWindow(editRecieptWindow);
+            } catch (NullPointerException e) {
+                Notification.show("Выбери строку");
+                return;
+            }
         });
 
         Button deleteBtn = new Button("Delete", event -> {

@@ -7,6 +7,7 @@ import com.example.demo7.repo.DoctorRepo;
 import com.example.demo7.repo.RecieptRepo;
 import com.vaadin.ui.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +30,11 @@ public class RecieptMyService {
 
 
     public void del(Reciept reciept) {
-        recieptRepo.delete(reciept);
+        try {
+            recieptRepo.delete(reciept);
+        } catch (InvalidDataAccessApiUsageException e) {
+            Notification.show("Выбери строку ");
+        }
     }
 
     public List<Reciept> getStat(Long id) {

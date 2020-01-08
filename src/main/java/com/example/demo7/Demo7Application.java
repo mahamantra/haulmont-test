@@ -16,15 +16,15 @@ public class Demo7Application {
     public static void main(String[] args) {
         SpringApplication.run(Demo7Application.class, args);
 
-//        String script = "init.sql";
-//        try {
-//            Class.forName("org.hsqldb.jdbc.JDBCDriver");
-//            new ScriptRunner(DriverManager.getConnection(
-//                    "jdbc:hsqldb:file:testDB", "sa", "123"))
-//                    .runScript(new BufferedReader(new FileReader(script)));
-//        } catch (Exception e) {
-//            System.err.println(e);
-//        }
+        String script = "init.sql";
+        try {
+            Class.forName("org.hsqldb.jdbc.JDBCDriver");
+            new ScriptRunner(DriverManager.getConnection(
+                    "jdbc:hsqldb:file:testDB", "sa", "123"))
+                    .runScript(new BufferedReader(new FileReader(script)));
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 
 }
