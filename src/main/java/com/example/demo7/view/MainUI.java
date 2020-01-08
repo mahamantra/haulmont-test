@@ -179,13 +179,21 @@ public class MainUI extends UI {
     }
 
     private void recieptGridInit() {
-        TextField descritionFilter = new TextField();
-        descritionFilter.setPlaceholder("filter by description...");
+        TextField descriptionFilter = new TextField();
+       // descriptionFilter.setCaption("Описание:");
+        Label des =new Label("Описание:");
         NativeSelect<Patient> patientFilter = new NativeSelect<>();
         patientFilter.setItems(patientMyService.allPatients());
+       // patientFilter.setCaption("Пациент:");
+        Label pat =new Label("Пациент:");
+
         NativeSelect<Priority> priorityFilter = new NativeSelect<>();
         priorityFilter.setItems(Priority.values());
-        Button filterBtn = new Button("Filter");
+       // priorityFilter.setCaption("Приоритет:");
+        Label pri =new Label("Приоритет:");
+
+        Button filterBtn = new Button("Применить фильтры");
+
         filterBtn.addClickListener(event -> {
             List<Reciept> list = recieptMyService.allReciept();
             if (priorityFilter.getValue() != null) {
@@ -194,14 +202,13 @@ public class MainUI extends UI {
             if (patientFilter.getValue() != null) {
                 list = list.stream().filter(reciept -> reciept.getPatient().getId().equals(patientFilter.getValue().getId())).collect(Collectors.toList());
             }
-            if (descritionFilter.getValue() != null) {
-                list = list.stream().filter(reciept -> reciept.getDescription().toLowerCase().contains(descritionFilter.getValue().toLowerCase())).collect(Collectors.toList());
+            if (descriptionFilter.getValue() != null) {
+                list = list.stream().filter(reciept -> reciept.getDescription().toLowerCase().contains(descriptionFilter.getValue().toLowerCase())).collect(Collectors.toList());
             }
-
-
             recieptGrid.setItems(list);
         });
-        HorizontalLayout filterlayout = new HorizontalLayout(descritionFilter, patientFilter, priorityFilter, filterBtn);
+
+        HorizontalLayout filterlayout = new HorizontalLayout(des,descriptionFilter,pat, patientFilter,pri, priorityFilter, filterBtn);
 
         Button addBtn = new Button("Add", event -> {
             recieptGrid.asSingleSelect().clear();
@@ -222,6 +229,7 @@ public class MainUI extends UI {
         buttonLayout.setMargin(true);
 
         recieptGrid.setColumns("description", "priority", "doctor", "patient", "validity", "creationDate");
+        recieptGrid.getColumn("description").setCaption("Описание");
         recieptGrid.setSizeFull();
 
         recieptLayout = new VerticalLayout(filterlayout, recieptGrid, buttonLayout);
@@ -247,23 +255,7 @@ public class MainUI extends UI {
     public void updateRecieptList() {
 
         List<Reciept> list = recieptMyService.allReciept();
-        // List<Reciept> list = recieptMyService.findByDes("6");
         recieptGrid.setItems(list);
     }
-
-    public void filterReciepts(String des, Long patientId, Priority priority) {
-        List<Reciept> list = recieptMyService.allReciept();
-        if (priority != null) {
-            list = list.stream().filter(reciept -> reciept.getPriority() == priority).collect(Collectors.toList());
-        }
-        if (patientId != null) {
-            list = list.stream().filter(reciept -> reciept.getId() == patientId).collect(Collectors.toList());
-        }
-
-        recieptGrid.setItems(list);
-
-
-    }
-
 
 }

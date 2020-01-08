@@ -5,12 +5,16 @@ import com.example.demo7.domain.Patient;
 import com.example.demo7.domain.Priority;
 import com.example.demo7.domain.Reciept;
 import com.example.demo7.service.RecieptMyService;
+import com.vaadin.data.Binder;
+import com.vaadin.data.ValueProvider;
+import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.stereotype.Component;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -32,7 +36,7 @@ public class EditRecieptWindow extends Window {
 
 
     private MainUI mainUI;
-    // private Binder<Reciept> binder = new Binder<>(Reciept.class);
+     private Binder<Reciept> binder = new Binder<>(Reciept.class);
 
     public EditRecieptWindow(Reciept reciept, MainUI mainUI) {
         super("Reciept editor");
@@ -45,11 +49,25 @@ public class EditRecieptWindow extends Window {
         doctor.setItems(doctorsList);
         List<Patient> patientList = mainUI.getPatientMyService().allPatients();
         patient.setItems(patientList);
-
         priority.setItems(Priority.values());
 
+        binder.setBean(reciept);
+        binder.forField(description)
+                //.withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][А-Яа-яёЁ\\-]{1,20}$"))
+                .bind(Reciept::getDescription, Reciept::setDescription);
+        description.setRequiredIndicatorVisible(true);
+
+
+//
+//        binder.forField(validity)
+//                //.withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][А-Яа-яёЁ\\-]{1,20}$"))
+//                .bind((reciept1 -> new Date(reciept1.getValidity().getTime()).toLocalDate()), reciept->reciept.setValidity(Date.valueOf(validity.getValue())));
+//        description.setRequiredIndicatorVisible(true);
+
+
+
         if (reciept.getId() != null) {
-            description.setValue(reciept.getDescription());
+           // description.setValue(reciept.getDescription());
             validity.setValue(new Date(reciept.getValidity().getTime()).toLocalDate());
             creationDate.setValue(new Date(reciept.getCreationDate().getTime()).toLocalDate());
             priority.setValue(reciept.getPriority());
@@ -100,7 +118,7 @@ public class EditRecieptWindow extends Window {
 
     private void updateReciept() {
         reciept.setCreationDate(Date.valueOf(creationDate.getValue()));
-        reciept.setDescription(description.getValue());
+       // reciept.setDescription(description.getValue());
         reciept.setValidity(Date.valueOf(validity.getValue()));
         reciept.setDoctor(doctor.getValue());
         reciept.setPatient(patient.getValue());
