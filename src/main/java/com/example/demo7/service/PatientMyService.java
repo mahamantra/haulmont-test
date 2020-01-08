@@ -6,6 +6,7 @@ import com.example.demo7.repo.DoctorRepo;
 import com.example.demo7.repo.PatientRepo;
 import com.vaadin.ui.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +29,11 @@ public class PatientMyService {
     }
 
     public void del(Patient patient) {
-        patientRepo.delete(patient);
+        try {
+            patientRepo.delete(patient);
+        } catch (InvalidDataAccessApiUsageException e) {
+            Notification.show("Выбери строку ");
+        }
     }
 
 

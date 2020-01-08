@@ -31,9 +31,6 @@ public class MainUI extends UI {
     @Autowired
     private RecieptMyService recieptMyService;
 
-    // private ServiceImpl serviceImpl=ServiceImpl.getInstance();
-
-
     Grid<Doctor> doctorGrid = new Grid<>(Doctor.class);
     Grid<Patient> patientGrid = new Grid<>(Patient.class);
     Grid<Reciept> recieptGrid = new Grid<>(Reciept.class);
@@ -98,12 +95,9 @@ public class MainUI extends UI {
     }
 
     private void doctorGridInit() {
-        System.out.println("2" + doctorMyService);
         editDoctorWindow = new EditDoctorWindow(this);
-        editDoctorWindow.setMyService(doctorMyService);
 
         Button addBtn = new Button("Add", event -> {
-
             doctorGrid.asSingleSelect().clear();
             editDoctorWindow.setDoctor(new Doctor());
             addWindow(editDoctorWindow);
@@ -125,7 +119,9 @@ public class MainUI extends UI {
             doctorMyService.del(doctorGrid.asSingleSelect().getValue());
             updateDoctorList();
         });
+
         Button statBtn = new Button("Statistic", event -> addWindow(new StatWindow(this)));
+
         HorizontalLayout buttonLayout = new HorizontalLayout(addBtn, editBtn, deleteBtn, statBtn);
         buttonLayout.setMargin(true);
 
@@ -137,18 +133,9 @@ public class MainUI extends UI {
         doctorLayout.setExpandRatio(doctorGrid, 1);
         doctorLayout.setMargin(false);
 
-//        doctorGrid.asSingleSelect().addValueChangeListener(event -> {
-//            editDoctorWindow.setDoctor(event.getValue());
-//           // editDoctorWindow.setMainUI(this);
-//
-//        });
         updateDoctorList();
     }
 
-    private void printStat() {
-
-
-    }
 
     private void patientGridInit() {
         Button addBtn = new Button("Add", event -> {
@@ -156,7 +143,17 @@ public class MainUI extends UI {
             editPatientWindow.setPatient(new Patient());
             addWindow(editPatientWindow);
         });
-        Button editBtn = new Button("Edit", event -> addWindow(editPatientWindow));
+        Button editBtn = new Button("Edit", event -> {
+            try {
+                Patient patient = patientGrid.asSingleSelect().getValue();
+                if (patient == null) throw new NullPointerException();
+            } catch (NullPointerException e) {
+                Notification.show("Выбери строку");
+                return;
+            }
+            editPatientWindow.setPatient(patientGrid.asSingleSelect().getValue());
+            addWindow(editPatientWindow);
+        });
         Button deleteBtn = new Button("Delete", event -> {
             patientMyService.del(patientGrid.asSingleSelect().getValue());
             updatePatientList();
@@ -175,7 +172,7 @@ public class MainUI extends UI {
         patientGrid.asSingleSelect().addValueChangeListener(event -> {
             editPatientWindow.setMyService(patientMyService);
             editPatientWindow.setPatient(event.getValue());
-            editPatientWindow.setMyUI(this);
+            editPatientWindow.setMainUI(this);
 
         });
         updatePatientList();

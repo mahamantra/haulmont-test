@@ -15,18 +15,6 @@ public class DoctorMyService {
     @Autowired
     private DoctorRepo doctorRepo;
 
-
-    //    private static DoctorService instance;
-//
-//    public static DoctorService getInstance() {
-//        if (instance == null) {
-//            instance = new DoctorService();
-//
-//        }
-//        return instance;
-//    }
-
-
     public List<Doctor> allDoctors() {
         return doctorRepo.findAll();
     }
@@ -35,17 +23,13 @@ public class DoctorMyService {
         doctorRepo.save(doctor);
     }
 
-    public void del(Doctor doctor){
-
+    public void del(Doctor doctor) {
         try {
             doctorRepo.delete(doctor);
         } catch (InvalidDataAccessApiUsageException e) {
             Notification.show("Выбери строку ");
         }
     }
-
-
-
 
 
 }
