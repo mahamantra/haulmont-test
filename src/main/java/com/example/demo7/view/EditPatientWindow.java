@@ -1,87 +1,77 @@
 package com.example.demo7.view;
 
-import com.example.demo7.domain.Patient;
-import com.example.demo7.service.PatientMyService;
+import com.example.demo7.domain.Patients;
+import com.example.demo7.service.PatientService;
 import com.vaadin.data.Binder;
 import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintViolationException;
 
-@Component
 public class EditPatientWindow extends Window {
 
-    private TextField firstName = new TextField("First name");
-    private TextField lastName = new TextField("Last name");
-    private TextField patronymic = new TextField("Patronymic");
-    private TextField phoneNumber = new TextField("Phone number");
+    private PatientService patientService;
 
-    private Button save = new Button("Save");
-    private Button cancel = new Button("Cancel");
-
-    private PatientMyService patientMyService;
-
-    private Patient patient;
+    private Patients patients;
     private MainUI mainUI;
-    private Binder<Patient> binder = new Binder<>(Patient.class);
+    private Binder<Patients> binder = new Binder<>(Patients.class);
 
-    public EditPatientWindow() {
+    public EditPatientWindow(MainUI mainUI) {
         super("Пациент");
         center();
         setModal(true);
+        setClosable(false);
+        setResizable(false);
+        this.mainUI = mainUI;
+        patientService = mainUI.getPatientService();
 
+        TextField lastName = new TextField("Фамилия");
         binder.forField(lastName)
-                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][А-Яа-яёЁ\\-]{1,20}$"))
-                .bind(Patient::getLastName, Patient::setLastName);
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицей", "^[А-Я][А-Яа-яёЁ\\-]{1,20}$"))
+                .bind(Patients::getLastName, Patients::setLastName);
         lastName.setRequiredIndicatorVisible(true);
+        TextField firstName = new TextField("Имя");
         binder.forField(firstName)
-                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][а-яёЁ]{1,20}$"))
-                .bind(Patient::getFirstName, Patient::setFirstName);
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицей", "^[А-Я][а-яёЁ]{1,20}$"))
+                .bind(Patients::getFirstName, Patients::setFirstName);
         firstName.setRequiredIndicatorVisible(true);
+        TextField patronymic = new TextField("Отчество");
         binder.forField(patronymic)
-                .withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Яа-яёЁ]{0,20}$"))
-                .bind(Patient::getPatronymic, Patient::setPatronymic);
+                .withValidator(new RegexpValidator("С болшой буквы, кирилицей", "^[А-Яа-яёЁ]{0,20}$"))
+                .bind(Patients::getPatronymic, Patients::setPatronymic);
+        TextField phoneNumber = new TextField("Телефон");
         binder.forField(phoneNumber)
                 .withValidator(new RegexpValidator("Введите номер телефона", "^((8|\\+7)[\\- ]?)?(\\(?\\d{4}\\)?[\\- ]?)?[\\d\\- ]{6,10}$"))
-                .bind(Patient::getPhoneNumber, Patient::setPhoneNumber);
+                .bind(Patients::getPhoneNumber, Patients::setPhoneNumber);
         phoneNumber.setRequiredIndicatorVisible(true);
 
+        Button save = new Button("ОК");
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
         save.addClickListener(e -> this.save());
-        cancel.addClickListener(e -> this.closeBtn());
+        Button cancel = new Button("Отменить");
+        cancel.addClickListener(e -> close());
 
         HorizontalLayout horizontalLayout = new HorizontalLayout(save, cancel);
         VerticalLayout verticalLayout = new VerticalLayout(firstName, lastName, patronymic, phoneNumber, horizontalLayout);
         setContent(verticalLayout);
     }
 
-    public void setMainUI(MainUI mainUI) {
-        this.mainUI = mainUI;
-    }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-        binder.setBean(patient);
-    }
-
-    public void setMyService(PatientMyService patientMyService) {
-        this.patientMyService = patientMyService;
-    }
-
-    private void closeBtn() {
-        close();
+    public void setPatients(Patients patients) {
+        this.patients = patients;
+        binder.setBean(patients);
     }
 
     private void save() {
         try {
-            patientMyService.savePatient(patient);
+            if (binder.validate().hasErrors()) throw new IllegalArgumentException();
+            patientService.savePatient(patients);
             mainUI.updatePatientList();
             close();
-        } catch (ConstraintViolationException e) {
+        } catch (ConstraintViolationException|IllegalArgumentException e) {
             Notification.show("Заполните все необходимые поля");
         }
     }

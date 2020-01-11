@@ -1,13 +1,13 @@
 package com.example.demo7.view;
 
 
-import com.example.demo7.domain.Doctor;
-import com.example.demo7.domain.Patient;
+import com.example.demo7.domain.Doctors;
+import com.example.demo7.domain.Patients;
 import com.example.demo7.domain.Priority;
-import com.example.demo7.domain.Reciept;
-import com.example.demo7.service.DoctorMyService;
-import com.example.demo7.service.PatientMyService;
-import com.example.demo7.service.RecieptMyService;
+import com.example.demo7.domain.Recipes;
+import com.example.demo7.service.DoctorService;
+import com.example.demo7.service.PatientService;
+import com.example.demo7.service.RecipeService;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
@@ -17,122 +17,99 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Theme("valo")
 @SpringUI
 public class MainUI extends UI {
 
-    @Autowired
-    private DoctorMyService doctorMyService;
-    @Autowired
-    private PatientMyService patientMyService;
-    @Autowired
-    private RecieptMyService recieptMyService;
+    private DoctorService doctorService;
+    private PatientService patientService;
+    private RecipeService recipeService;
 
-    Grid<Doctor> doctorGrid = new Grid<>(Doctor.class);
-    Grid<Patient> patientGrid = new Grid<>(Patient.class);
-    Grid<Reciept> recieptGrid = new Grid<>(Reciept.class);
-    EditDoctorWindow editDoctorWindow;
-    EditPatientWindow editPatientWindow = new EditPatientWindow();
+    private Grid<Doctors> doctorsGrid = new Grid<>(Doctors.class);
+    private Grid<Patients> patientsGrid = new Grid<>(Patients.class);
+    private Grid<Recipes> recipesGrid = new Grid<>(Recipes.class);
 
-    VerticalLayout doctorLayout;
-    VerticalLayout patientLayout;
-    VerticalLayout recieptLayout;
+    private VerticalLayout doctorLayout;
+    private VerticalLayout patientLayout;
+    private VerticalLayout recipeLayout;
+
+
+    @Autowired
+    public MainUI(DoctorService doctorService, PatientService patientService, RecipeService recipeService) {
+        this.doctorService = doctorService;
+        this.patientService = patientService;
+        this.recipeService = recipeService;
+    }
 
     @Override
     protected void init(VaadinRequest request) {
-        System.out.println("1" + doctorMyService);
+        TabSheet tabSheet = new TabSheet();
+
         doctorGridInit();
         patientGridInit();
         recieptGridInit();
-        doctorLayout.setVisible(true);
-        patientLayout.setVisible(false);
-        recieptLayout.setVisible(false);
+        doctorLayout.setMargin(true);
+        patientLayout.setMargin(true);
+        tabSheet.addTab(doctorLayout).setCaption("Врачи");
+        tabSheet.addTab(patientLayout).setCaption("Пациенты");
+        tabSheet.addTab(recipeLayout).setCaption("Рецепты");
+        tabSheet.setSizeFull();
 
-        Label title = new Label("Menu");
-        title.addStyleName(ValoTheme.MENU_TITLE);
-
-        Button view1 = new Button("Doctors");
-        view1.addClickListener(e -> {
-            doctorLayout.setVisible(true);
-            patientLayout.setVisible(false);
-            recieptLayout.setVisible(false);
-        });
-        view1.addStyleNames(ValoTheme.BUTTON_LINK, ValoTheme.MENU_ITEM);
-
-        Button view2 = new Button("Patients");
-        view2.addClickListener(e -> {
-            doctorLayout.setVisible(false);
-            patientLayout.setVisible(true);
-            recieptLayout.setVisible(false);
-        });
-        view2.addStyleNames(ValoTheme.BUTTON_LINK, ValoTheme.MENU_ITEM);
-
-        Button view3 = new Button("Reciepts");
-        view3.addClickListener(e -> {
-            doctorLayout.setVisible(false);
-            patientLayout.setVisible(false);
-            recieptLayout.setVisible(true);
-        });
-        view3.addStyleNames(ValoTheme.BUTTON_LINK, ValoTheme.MENU_ITEM);
-
-        CssLayout menu = new CssLayout(title, view1, view2, view3);
-        menu.addStyleName(ValoTheme.MENU_ROOT);
-        menu.setWidth("200px");
-
-        HorizontalLayout mainLayout = new HorizontalLayout(menu, doctorLayout, patientLayout, recieptLayout);
-        mainLayout.setExpandRatio(doctorLayout, 1);
-        mainLayout.setExpandRatio(patientLayout, 1);
-        mainLayout.setExpandRatio(recieptLayout, 1);
-
-        mainLayout.setSizeFull();
-        System.out.println(doctorMyService);
-
-        setContent(mainLayout);
-
+        VerticalLayout verticalLayout = new VerticalLayout(tabSheet);
+        verticalLayout.setSizeFull();
+        setContent(verticalLayout);
     }
 
     private void doctorGridInit() {
-        editDoctorWindow = new EditDoctorWindow(this);
+        EditDoctorWindow editDoctorWindow = new EditDoctorWindow(this);
 
-        Button addBtn = new Button("Add", event -> {
-            doctorGrid.asSingleSelect().clear();
-            editDoctorWindow.setDoctor(new Doctor());
+        Button addBtn = new Button("Добавить", event -> {
+            editDoctorWindow.setDoctors(new Doctors());
             addWindow(editDoctorWindow);
         });
+        addBtn.setStyleName(ValoTheme.BUTTON_PRIMARY);
 
-        Button editBtn = new Button("Edit", event -> {
+        Button editBtn = new Button("Изменить", event -> {
             try {
-                Doctor doctor = doctorGrid.asSingleSelect().getValue();
-                if (doctor == null) throw new NullPointerException();
+                Doctors doctors = doctorsGrid.asSingleSelect().getValue();
+                if (doctors == null) throw new NullPointerException();
+                editDoctorWindow.setDoctors(doctors);
             } catch (NullPointerException e) {
                 Notification.show("Выбери строку");
                 return;
             }
-            editDoctorWindow.setDoctor(doctorGrid.asSingleSelect().getValue());
             addWindow(editDoctorWindow);
         });
+        editBtn.setStyleName(ValoTheme.BUTTON_FRIENDLY);
 
-        Button deleteBtn = new Button("Delete", event -> {
-            doctorMyService.del(doctorGrid.asSingleSelect().getValue());
+        Button deleteBtn = new Button("Удалить", event -> {
+            doctorService.del(doctorsGrid.asSingleSelect().getValue());
             updateDoctorList();
         });
+        deleteBtn.setStyleName(ValoTheme.BUTTON_DANGER);
 
-        Button statBtn = new Button("Statistic", event -> addWindow(new StatWindow(this)));
+        Button statBtn = new Button("Показать статистику", event -> addWindow(new StatWindow(this)));
 
         HorizontalLayout buttonLayout = new HorizontalLayout(addBtn, editBtn, deleteBtn, statBtn);
         buttonLayout.setMargin(true);
 
-        doctorGrid.setColumns("lastName", "firstName", "patronymic", "specialization");
-        doctorGrid.setSizeFull();
+        doctorsGrid.setColumns("lastName", "firstName", "patronymic", "specialization");
+        doctorsGrid.getColumn("lastName").setCaption("Фамилия");
+        doctorsGrid.getColumn("firstName").setCaption("Имя");
+        doctorsGrid.getColumn("patronymic").setCaption("Отчество");
+        doctorsGrid.getColumn("specialization").setCaption("Специализация");
+        doctorsGrid.setSizeFull();
 
-        doctorLayout = new VerticalLayout(doctorGrid, buttonLayout);
+        doctorLayout = new VerticalLayout(doctorsGrid, buttonLayout);
         doctorLayout.setSizeFull();
-        doctorLayout.setExpandRatio(doctorGrid, 1);
+        doctorLayout.setExpandRatio(doctorsGrid, 1);
         doctorLayout.setMargin(false);
 
         updateDoctorList();
@@ -140,130 +117,143 @@ public class MainUI extends UI {
 
 
     private void patientGridInit() {
-        Button addBtn = new Button("Add", event -> {
-            patientGrid.asSingleSelect().clear();
-            editPatientWindow.setPatient(new Patient());
+        EditPatientWindow editPatientWindow = new EditPatientWindow(this);
+
+        Button addBtn = new Button("Добавить", event -> {
+            editPatientWindow.setPatients(new Patients());
             addWindow(editPatientWindow);
         });
-        Button editBtn = new Button("Edit", event -> {
+        addBtn.setStyleName(ValoTheme.BUTTON_PRIMARY);
+
+
+        Button editBtn = new Button("Изменить", event -> {
             try {
-                Patient patient = patientGrid.asSingleSelect().getValue();
-                if (patient == null) throw new NullPointerException();
+                Patients patients = patientsGrid.asSingleSelect().getValue();
+                editPatientWindow.setPatients(patients);
+                if (patients == null) throw new NullPointerException();
             } catch (NullPointerException e) {
                 Notification.show("Выбери строку");
                 return;
             }
-            editPatientWindow.setPatient(patientGrid.asSingleSelect().getValue());
             addWindow(editPatientWindow);
         });
-        Button deleteBtn = new Button("Delete", event -> {
-            patientMyService.del(patientGrid.asSingleSelect().getValue());
+        editBtn.setStyleName(ValoTheme.BUTTON_FRIENDLY);
+
+        Button deleteBtn = new Button("Удалить", event -> {
+            patientService.del(patientsGrid.asSingleSelect().getValue());
             updatePatientList();
         });
+
         HorizontalLayout buttonLayout = new HorizontalLayout(addBtn, editBtn, deleteBtn);
         buttonLayout.setMargin(true);
+        deleteBtn.setStyleName(ValoTheme.BUTTON_DANGER);
 
-        patientGrid.setColumns("lastName", "firstName", "patronymic", "phoneNumber");
-        patientGrid.setSizeFull();
+        patientsGrid.setColumns("lastName", "firstName", "patronymic", "phoneNumber");
+        patientsGrid.getColumn("lastName").setCaption("Фамилия");
+        patientsGrid.getColumn("firstName").setCaption("Имя");
+        patientsGrid.getColumn("patronymic").setCaption("Отчество");
+        patientsGrid.getColumn("phoneNumber").setCaption("Телефон");
+        patientsGrid.setSizeFull();
 
-        patientLayout = new VerticalLayout(patientGrid, buttonLayout);
+        patientLayout = new VerticalLayout(patientsGrid, buttonLayout);
         patientLayout.setSizeFull();
-        patientLayout.setExpandRatio(patientGrid, 1);
+        patientLayout.setExpandRatio(patientsGrid, 1);
         patientLayout.setMargin(false);
 
-        patientGrid.asSingleSelect().addValueChangeListener(event -> {
-            editPatientWindow.setMyService(patientMyService);
-            editPatientWindow.setPatient(event.getValue());
-            editPatientWindow.setMainUI(this);
-
-        });
         updatePatientList();
     }
 
     private void recieptGridInit() {
+        Label des = new Label("Описание:");
         TextField descriptionFilter = new TextField();
-       // descriptionFilter.setCaption("Описание:");
-        Label des =new Label("Описание:");
-        NativeSelect<Patient> patientFilter = new NativeSelect<>();
-        patientFilter.setItems(patientMyService.allPatients());
-       // patientFilter.setCaption("Пациент:");
-        Label pat =new Label("Пациент:");
-
+        Label pat = new Label("Пациент:");
+        NativeSelect<Patients> patientFilter = new NativeSelect<>();
+        patientFilter.setItems(patientService.allPatients());
+        Label pri = new Label("Приоритет:");
         NativeSelect<Priority> priorityFilter = new NativeSelect<>();
         priorityFilter.setItems(Priority.values());
-       // priorityFilter.setCaption("Приоритет:");
-        Label pri =new Label("Приоритет:");
-
         Button filterBtn = new Button("Применить фильтры");
 
         filterBtn.addClickListener(event -> {
-            List<Reciept> list = recieptMyService.allReciept();
+            List<Recipes> list = recipeService.allReciept();
             if (priorityFilter.getValue() != null) {
-                list = list.stream().filter(reciept -> reciept.getPriority() == priorityFilter.getValue()).collect(Collectors.toList());
+                list = list.stream().filter(recipes -> recipes.getPriority() == priorityFilter.getValue()).collect(Collectors.toList());
             }
             if (patientFilter.getValue() != null) {
-                list = list.stream().filter(reciept -> reciept.getPatient().getId().equals(patientFilter.getValue().getId())).collect(Collectors.toList());
+                list = list.stream().filter(recipes -> recipes.getPatients().getId().equals(patientFilter.getValue().getId())).collect(Collectors.toList());
             }
             if (descriptionFilter.getValue() != null) {
-                list = list.stream().filter(reciept -> reciept.getDescription().toLowerCase().contains(descriptionFilter.getValue().toLowerCase())).collect(Collectors.toList());
+                list = list.stream().filter(recipes -> recipes.getDescription().toLowerCase().contains(descriptionFilter.getValue().toLowerCase())).collect(Collectors.toList());
             }
-            recieptGrid.setItems(list);
+            recipesGrid.setItems(list);
         });
 
-        HorizontalLayout filterlayout = new HorizontalLayout(des,descriptionFilter,pat, patientFilter,pri, priorityFilter, filterBtn);
+        HorizontalLayout filterlayout = new HorizontalLayout(des, descriptionFilter, pat, patientFilter, pri, priorityFilter, filterBtn);
+        filterlayout.setMargin(true);
 
-        Button addBtn = new Button("Add", event -> {
-            recieptGrid.asSingleSelect().clear();
-            addWindow(new EditRecieptWindow(new Reciept(), this));
+        Button addBtn = new Button("Добавить", event -> {
+            recipesGrid.asSingleSelect().clear();
+            Recipes recipes = new Recipes();
+            recipes.setCreationDate(LocalDate.now());
+            addWindow(new EditRecieptWindow(recipes, this));
         });
-        Button editBtn = new Button("Edit", event -> {
+        addBtn.setStyleName(ValoTheme.BUTTON_PRIMARY);
+
+        Button editBtn = new Button("Изменить", event -> {
             EditRecieptWindow editRecieptWindow;
             try {
-                Reciept reciept = recieptGrid.asSingleSelect().getValue();
-                if (reciept == null) throw new NullPointerException();
-                editRecieptWindow = new EditRecieptWindow(reciept, this);
+                Recipes recipes = recipesGrid.asSingleSelect().getValue();
+                if (recipes == null) throw new NullPointerException();
+                editRecieptWindow = new EditRecieptWindow(recipes, this);
                 addWindow(editRecieptWindow);
             } catch (NullPointerException e) {
                 Notification.show("Выбери строку");
-                return;
             }
         });
+        editBtn.setStyleName(ValoTheme.BUTTON_FRIENDLY);
 
-        Button deleteBtn = new Button("Delete", event -> {
-            recieptMyService.del(recieptGrid.asSingleSelect().getValue());
+        Button deleteBtn = new Button("Удалить", event -> {
+            recipeService.del(recipesGrid.asSingleSelect().getValue());
             updateRecieptList();
         });
+        deleteBtn.setStyleName(ValoTheme.BUTTON_DANGER);
+
         HorizontalLayout buttonLayout = new HorizontalLayout(addBtn, editBtn, deleteBtn);
         buttonLayout.setMargin(true);
 
-        recieptGrid.setColumns("description", "priority", "doctor", "patient", "validity", "creationDate");
-        recieptGrid.getColumn("description").setCaption("Описание");
-        recieptGrid.setSizeFull();
+        recipesGrid.setColumns("patients", "doctors", "description", "priority", "creationDate", "validity");
+        recipesGrid.getColumn("description").setCaption("Описание");
+        recipesGrid.getColumn("priority").setCaption("Приоритет");
+        recipesGrid.getColumn("doctors").setCaption("Врач");
+        recipesGrid.getColumn("patients").setCaption("Пациент");
+        recipesGrid.getColumn("validity").setCaption("Срок действия");
+        recipesGrid.getColumn("creationDate").setCaption("Дата создания");
+        recipesGrid.setSizeFull();
 
-        recieptLayout = new VerticalLayout(filterlayout, recieptGrid, buttonLayout);
-        recieptLayout.setSizeFull();
-        recieptLayout.setHeight("100%");
-        recieptLayout.setExpandRatio(recieptGrid, 1);
-        recieptLayout.setMargin(false);
+        recipeLayout = new VerticalLayout(filterlayout, recipesGrid, buttonLayout);
+        recipeLayout.setSizeFull();
+        recipeLayout.setHeight("100%");
+        recipeLayout.setExpandRatio(recipesGrid, 1);
+        recipeLayout.setMargin(false);
 
 
         updateRecieptList();
     }
 
     public void updateDoctorList() {
-        List<Doctor> list = doctorMyService.allDoctors();
-        doctorGrid.setItems(list);
+        List<Doctors> list = doctorService.allDoctors();
+        doctorsGrid.setItems(list);
     }
 
     public void updatePatientList() {
-        List<Patient> list = patientMyService.allPatients();
-        patientGrid.setItems(list);
+        List<Patients> list = patientService.allPatients();
+        patientsGrid.setItems(list);
     }
 
     public void updateRecieptList() {
 
-        List<Reciept> list = recieptMyService.allReciept();
-        recieptGrid.setItems(list);
+        List<Recipes> list = recipeService.allReciept();
+        recipesGrid.setItems(list);
     }
 
 }

@@ -3,14 +3,13 @@ package com.example.demo7.domain;
 import lombok.Data;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Date;
 
 @Data
 @Entity
-public class Reciept {
+public class Recipes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,10 +17,10 @@ public class Reciept {
     private String description;
     @ManyToOne
     @NotNull
-    private Patient patient;
+    private Patients patients;
     @ManyToOne
     @NotNull
-    private Doctor doctor;
+    private Doctors doctors;
     @NotNull
     @Temporal(TemporalType.DATE)
     private Date creationDate;
@@ -50,5 +49,9 @@ public class Reciept {
     public void setValidity(LocalDate validity) {
         if (validity != null) this.validity = java.sql.Date.valueOf(validity);
         else this.validity = null;
+    }
+    @Override
+    public String toString() {
+        return "Рецепт "+description+" "+doctors;
     }
 }

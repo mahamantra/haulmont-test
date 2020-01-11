@@ -1,72 +1,79 @@
 package com.example.demo7.view;
 
-import com.example.demo7.domain.Doctor;
-import com.example.demo7.domain.Patient;
+import com.example.demo7.domain.Doctors;
+import com.example.demo7.domain.Patients;
 import com.example.demo7.domain.Priority;
-import com.example.demo7.domain.Reciept;
-import com.example.demo7.service.RecieptMyService;
+import com.example.demo7.domain.Recipes;
+import com.example.demo7.service.RecipeService;
 import com.vaadin.data.Binder;
-import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 
-import javax.validation.ConstraintViolationException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 
 public class EditRecieptWindow extends Window {
-    private Reciept reciept;
-    private DateField creationDate = new DateField("creationDate");
-    private DateField validity = new DateField("validity");
-    private NativeSelect<Patient> patient = new NativeSelect<>("patient");
-    private NativeSelect<Doctor> doctor = new NativeSelect<>("doctor");
-    private NativeSelect<Priority> priority = new NativeSelect<>("Priority");
-    private TextArea description = new TextArea("description");
+    private Recipes recipes;
+    private DateField creationDate = new DateField("Дата создания");
+    private DateField validity = new DateField("Срок действия");
+    private NativeSelect<Patients> patient = new NativeSelect<>("Пациент");
+    private NativeSelect<Doctors> doctor = new NativeSelect<>("Доктор");
+    private NativeSelect<Priority> priority = new NativeSelect<>("Приоритет");
+    private TextArea description = new TextArea("Описание");
 
-    private Button save = new Button("Save");
-    private Button cancel = new Button("Cancel");
+    private Button save = new Button("ОК");
+    private Button cancel = new Button("Отменить");
 
-    private RecieptMyService recieptMyService;
+    private RecipeService recipeService;
     private MainUI mainUI;
-    private Binder<Reciept> binder = new Binder<>(Reciept.class);
+    private Binder<Recipes> binder = new Binder<>(Recipes.class);
 
-    public EditRecieptWindow(Reciept reciept, MainUI mainUI) {
-        super("Reciept editor");
-        this.reciept = reciept;
+    public EditRecieptWindow(Recipes recipes, MainUI mainUI) {
+        super("Рецепт");
+        this.recipes = recipes;
         this.mainUI = mainUI;
-        setMyService(mainUI.getRecieptMyService());
+        setMyService(mainUI.getRecipeService());
         center();
         setModal(true);
-        List<Doctor> doctorsList = mainUI.getDoctorMyService().allDoctors();
+        setClosable(false);
+        setResizable(false);
+        List<Doctors> doctorsList = mainUI.getDoctorService().allDoctors();
         doctor.setItems(doctorsList);
-        List<Patient> patientList = mainUI.getPatientMyService().allPatients();
-        patient.setItems(patientList);
+        List<Patients> patientsList = mainUI.getPatientService().allPatients();
+        patient.setItems(patientsList);
         priority.setItems(Priority.values());
 
-        binder.setBean(reciept);
+        binder.setBean(recipes);
         binder.forField(creationDate)
-                //.withValidator(new RegexpValidator("С болшой буквы, кирилицой", "^[А-Я][А-Яа-яёЁ\\-]{1,20}$"))
-                .bind(Reciept::getCreationDate, Reciept::setCreationDate);
+                .withValidator(Objects::nonNull,"Пустое поле")
+                .bind(Recipes::getCreationDate, Recipes::setCreationDate);
         creationDate.setRequiredIndicatorVisible(true);
+
         binder.forField(validity)
                 .withValidator(localDate -> localDate.isAfter(creationDate.getValue()),"Неверная дата")
-                .bind(Reciept::getValidity, Reciept::setValidity);
+                .bind(Recipes::getValidity, Recipes::setValidity);
         validity.setRequiredIndicatorVisible(true);
         binder.forField(patient)
-                .bind(Reciept::getPatient, Reciept::setPatient);
+                .withValidator(Objects::nonNull,"Пустое поле")
+                .bind(Recipes::getPatients, Recipes::setPatients);
         patient.setRequiredIndicatorVisible(true);
         binder.forField(doctor)
-                .bind(Reciept::getDoctor, Reciept::setDoctor);
+                .withValidator(Objects::nonNull,"Пустое поле")
+                .bind(Recipes::getDoctors, Recipes::setDoctors);
         doctor.setRequiredIndicatorVisible(true);
         binder.forField(priority)
-                .bind(Reciept::getPriority, Reciept::setPriority);
+                .withValidator(Objects::nonNull,"Пустое поле")
+                .bind(Recipes::getPriority, Recipes::setPriority);
         priority.setRequiredIndicatorVisible(true);
         binder.forField(description)
                 .withValidator(new StringLengthValidator("Заполните описание",1,255))
-                 .bind(Reciept::getDescription, Reciept::setDescription);
+                 .bind(Recipes::getDescription, Recipes::setDescription);
         description.setRequiredIndicatorVisible(true);
+        description.setSizeFull();
 
         save.setStyleName(ValoTheme.BUTTON_PRIMARY);
         save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
@@ -83,12 +90,12 @@ public class EditRecieptWindow extends Window {
         this.mainUI = mainUI;
     }
 
-    public void setReciept(Reciept reciept) {
-        this.reciept = reciept;
+    public void setRecipes(Recipes recipes) {
+        this.recipes = recipes;
     }
 
-    public void setMyService(RecieptMyService recieptMyService) {
-        this.recieptMyService = recieptMyService;
+    public void setMyService(RecipeService recipeService) {
+        this.recipeService = recipeService;
     }
 
     private void closeBtn() {
@@ -98,7 +105,7 @@ public class EditRecieptWindow extends Window {
     private void save() {
         try {
             if(binder.validate().hasErrors())throw new Exception();
-            recieptMyService.saveReciept(reciept);
+            recipeService.saveReciept(recipes);
             mainUI.updateRecieptList();
             close();
         } catch (Exception e) {

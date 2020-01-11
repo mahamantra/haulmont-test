@@ -1,8 +1,7 @@
 package com.example.demo7.view;
 
-import com.example.demo7.domain.Doctor;
+import com.example.demo7.domain.Doctors;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Window;
 import lombok.Data;
 
@@ -12,27 +11,31 @@ public class StatWindow extends Window {
     MainUI mainUI;
 
     public StatWindow(MainUI mainUI) {
-        super("Statistic");
+        super("Статистика по количеству рецептов");
         this.mainUI = mainUI;
         center();
         setModal(true);
         setWidthUndefined();
 
-        List<Doctor> doctorList = mainUI.getDoctorMyService().allDoctors();
+        List<Doctors> doctorsList = mainUI.getDoctorService().allDoctors();
         List<Stat> statList = new ArrayList<>();
         Grid<Stat> grid = new Grid<>(Stat.class);
         grid.setWidth("600px");
 
 
-        doctorList.forEach(doctor -> {
+        doctorsList.forEach(doctor -> {
             Stat stat = new Stat();
-            stat.setCount(mainUI.getRecieptMyService().getStat(doctor.getId()).size());
+            stat.setCount(mainUI.getRecipeService().getStat(doctor.getId()).size());
 if (stat.count>0)
-            {stat.setDoctor(doctor);
+            {stat.setDoctors(doctor);
             statList.add(stat);}
         });
         Collections.sort(statList);
         grid.setItems(statList);
+
+        grid.setColumns("doctors", "count");
+        grid.getColumn("doctors").setCaption("Врач");
+        grid.getColumn("count").setCaption("Количество");
 
         setContent(grid);
 
@@ -40,7 +43,7 @@ if (stat.count>0)
 
     @Data
   public   static class Stat implements Comparable<Stat>{
-        Doctor doctor;
+        Doctors doctors;
         Integer count;
 
         @Override
