@@ -52,6 +52,8 @@ public class Recipes {
     }
     @Override
     public String toString() {
-        return "Рецепт "+description+" "+doctors;
+        return "Рецепт: "+description+" \n"+
+                "Врач: "+doctors+"\n"+
+                "Пациент: "+patients+"\n";
     }
 }

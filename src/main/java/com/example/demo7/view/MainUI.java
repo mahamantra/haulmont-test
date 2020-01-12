@@ -182,7 +182,7 @@ public class MainUI extends UI {
             if (patientFilter.getValue() != null) {
                 list = list.stream().filter(recipes -> recipes.getPatients().getId().equals(patientFilter.getValue().getId())).collect(Collectors.toList());
             }
-            if (descriptionFilter.getValue() != null) {
+            if (descriptionFilter.getValue() != null&&descriptionFilter.getValue().trim().length()!=0) {
                 list = list.stream().filter(recipes -> recipes.getDescription().toLowerCase().contains(descriptionFilter.getValue().toLowerCase())).collect(Collectors.toList());
             }
             recipesGrid.setItems(list);
