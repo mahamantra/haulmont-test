@@ -20,15 +20,13 @@ public class Doctors {
     private String firstName;
     @NotNull
     private String lastName;
-
+    @NotNull
     private String patronymic;
     @NotNull
     private String specialization;
 
     @Override
     public String toString() {
-        String s="";
-        if(patronymic!=null)s=patronymic;
-        return lastName + " " + firstName + " " + s + " (" + specialization + ")";
+        return lastName + " " + firstName + " " + patronymic + " (" + specialization + ")";
     }
 }

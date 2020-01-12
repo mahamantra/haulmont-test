@@ -82,7 +82,7 @@ public class MainUI extends UI {
                 if (doctors == null) throw new NullPointerException();
                 editDoctorWindow.setDoctors(doctors);
             } catch (NullPointerException e) {
-                Notification.show("Выбери строку");
+                Notification.show("Выбери строку",Notification.Type.WARNING_MESSAGE);
                 return;
             }
             addWindow(editDoctorWindow);
@@ -132,7 +132,7 @@ public class MainUI extends UI {
                 editPatientWindow.setPatients(patients);
                 if (patients == null) throw new NullPointerException();
             } catch (NullPointerException e) {
-                Notification.show("Выбери строку");
+                Notification.show("Выбери строку",Notification.Type.WARNING_MESSAGE);
                 return;
             }
             addWindow(editPatientWindow);
@@ -192,7 +192,6 @@ public class MainUI extends UI {
         filterlayout.setMargin(true);
 
         Button addBtn = new Button("Добавить", event -> {
-            recipesGrid.asSingleSelect().clear();
             Recipes recipes = new Recipes();
             recipes.setCreationDate(LocalDate.now());
             addWindow(new EditRecieptWindow(recipes, this));
@@ -207,7 +206,7 @@ public class MainUI extends UI {
                 editRecieptWindow = new EditRecieptWindow(recipes, this);
                 addWindow(editRecieptWindow);
             } catch (NullPointerException e) {
-                Notification.show("Выбери строку");
+                Notification.show("Выбери строку",Notification.Type.WARNING_MESSAGE);
             }
         });
         editBtn.setStyleName(ValoTheme.BUTTON_FRIENDLY);

@@ -18,14 +18,13 @@ public class Patients {
     private String firstName;
     @NotNull
     private String lastName;
+    @NotNull
     private String patronymic;
     @NotNull
     private String phoneNumber;
 
     @Override
     public String toString() {
-        String s="";
-        if(patronymic!=null)s=patronymic;
-        return lastName + " " + firstName + " " + s ;
+        return lastName + " " + firstName + " " + patronymic;
     }
 }

@@ -68,11 +68,14 @@ public class EditPatientWindow extends Window {
     private void save() {
         try {
             if (binder.validate().hasErrors()) throw new IllegalArgumentException();
+            if(patients.getPatronymic()==null||patients.getPatronymic().trim().length()==0)patients.setPatronymic("");
             patientService.savePatient(patients);
             mainUI.updatePatientList();
             close();
-        } catch (ConstraintViolationException|IllegalArgumentException e) {
-            Notification.show("Заполните все необходимые поля");
+        } catch (ConstraintViolationException | IllegalArgumentException e) {
+            Notification.show("Заполните все необходимые поля", Notification.Type.WARNING_MESSAGE);
+        } catch (IllegalStateException e) {
+            Notification.show("Пациент с таким именем уже существует", Notification.Type.WARNING_MESSAGE);
         }
     }
 }

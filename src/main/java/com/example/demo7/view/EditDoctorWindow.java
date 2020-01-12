@@ -69,11 +69,14 @@ public class EditDoctorWindow extends Window {
     private void save() {
         try {
             if (binder.validate().hasErrors()) throw new IllegalArgumentException();
+            if(doctors.getPatronymic()==null||doctors.getPatronymic().trim().length()==0)doctors.setPatronymic("");
             doctorService.saveDoctor(doctors);
             mainUI.updateDoctorList();
             close();
         } catch (ConstraintViolationException | IllegalArgumentException e) {
-            Notification.show("Заполните все необходимые поля");
+            Notification.show("Заполните все необходимые поля", Notification.Type.WARNING_MESSAGE);
+        } catch (IllegalStateException e) {
+            Notification.show("Врач с таким именем уже существует", Notification.Type.WARNING_MESSAGE);
         }
     }
 }

@@ -27,7 +27,7 @@ public class RecipeService {
             recipeRepo.save(recipes);
             Notification.show(recipes +" Сохранен", Notification.Type.WARNING_MESSAGE);
         } catch (Exception e) {
-            Notification.show(e.toString());
+            Notification.show(e.toString(), Notification.Type.WARNING_MESSAGE);
         }
     }
 
@@ -37,7 +37,7 @@ public class RecipeService {
             Notification.show(recipes +" Удален", Notification.Type.WARNING_MESSAGE);
 
         } catch (InvalidDataAccessApiUsageException e) {
-            Notification.show("Выбери строку ");
+            Notification.show("Выбери строку ", Notification.Type.WARNING_MESSAGE);
         }
     }
 

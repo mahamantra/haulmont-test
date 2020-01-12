@@ -16,6 +16,7 @@ public class StatWindow extends Window {
         center();
         setModal(true);
         setWidthUndefined();
+     setResizable(false);
 
         List<Doctors> doctorsList = mainUI.getDoctorService().allDoctors();
         List<Stat> statList = new ArrayList<>();

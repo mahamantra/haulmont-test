@@ -23,25 +23,27 @@ public class DoctorService {
     }
 
     public void saveDoctor(Doctors doctors) {
+        List<Doctors> list = doctorRepo.findByLastNameAndFirstNameAndPatronymic(doctors.getLastName(), doctors.getFirstName(), doctors.getPatronymic());
+        if (list.size() > 0 && doctors.getId() == null)
+            throw new IllegalStateException();
+        if (list.size() > 0 && doctors.getId() != null) list.forEach(doctors1 -> {
+            if (!doctors1.getId().equals(doctors.getId())) throw new IllegalStateException();
+        });
+        doctorRepo.save(doctors);
+        Notification.show(doctors + " Сохранен", Notification.Type.WARNING_MESSAGE);
 
-        try {
-            doctorRepo.save(doctors);
-            Notification.show(doctors +" Сохранен", Notification.Type.WARNING_MESSAGE);
-        } catch (Exception e) {
-            Notification.show(e.toString());
-        }
 
     }
 
     public void del(Doctors doctors) {
         try {
             doctorRepo.delete(doctors);
-            Notification.show(doctors +" Удален", Notification.Type.WARNING_MESSAGE);
+            Notification.show(doctors + " Удален", Notification.Type.WARNING_MESSAGE);
 
         } catch (InvalidDataAccessApiUsageException e) {
-            Notification.show("Выбери строку ");
+            Notification.show("Выбери строку ", Notification.Type.WARNING_MESSAGE);
         } catch (DataIntegrityViolationException e) {
-            Notification.show("Существует рецепт с таким доктором");
+            Notification.show("Существует рецепт с таким врачом", Notification.Type.WARNING_MESSAGE);
         }
 
     }
